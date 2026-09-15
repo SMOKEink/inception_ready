@@ -1,0 +1,118 @@
+name: inception
+
+services:
+  mariadb:
+    build: requirements/mariadb
+    image: mariadb:aachata
+    container_name: mariadb
+    env_file: .env
+    secrets:
+      - db_root_password
+      - db_password
+    volumes:
+      - mariadb:/var/lib/mysql
+    networks:
+      - inception
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping --password=$$(cat /run/secrets/db_root_password)"]
+      timeout: 3s
+      retries: 10
+      interval: 4s
+
+  wordpress:
+    build: requirements/wordpress
+    image: wordpress:aachata
+    container_name: wordpress
+    env_file: .env
+    secrets:
+      - db_password
+      - wp_admin_password
+      - wp_user_password
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: always
+
+  nginx:
+    build: requirements/nginx
+    image: nginx:aachata
+    container_name: nginx
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+      - adminer
+      - website
+    restart: always
+
+  # ---------- bonus ----------
+  adminer:
+    build: requirements/bonus/adminer
+    image: adminer:aachata
+    container_name: adminer
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+    restart: always
+
+  website:
+    build: requirements/bonus/website
+    image: website:aachata
+    container_name: website
+    networks:
+      - inception
+    restart: always
+
+  portainer:
+    build: requirements/bonus/portainer
+    image: portainer:aachata
+    container_name: portainer
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    secrets:
+      - portainer_password
+    networks:
+      - inception
+    restart: always
+
+volumes:
+  mariadb:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${HOME}/data/mariadb
+      # device: /home/aachata/data/mariadb
+  wordpress:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${HOME}/data/wordpress
+      # device: /home/aachata/data/wordpress
+
+networks:
+  inception:
+    driver: bridge
+
+secrets:
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  db_password:
+    file: ../secrets/db_password.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+  wp_user_password:
+    file: ../secrets/wp_user_password.txt
+  portainer_password:
+    file: ../secrets/portainer_password.txt
