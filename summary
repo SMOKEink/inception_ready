@@ -1,0 +1,31 @@
+Quick-Reference Summary — All Topics, ~5 Lines Each
+
+Docker CLI → dockerd → containerd → shim → runc
+CLI sends HTTP requests to dockerd (the daemon owning images/volumes/networks/API). dockerd delegates actual container lifecycle to containerd via gRPC. containerd hands off to runc, which uses namespaces/cgroups to spin up the isolated process, then exits. containerd-shim stays alive the whole time to hold stdio and report exit status, since runc doesn't linger. "Docker Engine" = dockerd + containerd + runc together, the whole server-side stack.
+
+Images vs containers, layers, COW, caching
+An image is a stack of read-only layers, each a filesystem diff from one Dockerfile instruction (RUN/COPY/ADD). A container adds one thin writable layer on top via copy-on-write — reads pass through to read-only layers, writes get copied up first. Multiple containers share the same image layers on disk with zero duplication. Layer caching means unchanged instructions reuse cached layers on rebuild — order instructions from least-to-most frequently changed. Container writes vanish on docker rm since they only ever lived in that one throwaway layer — the reason volumes exist.
+
+Namespaces vs cgroups
+Namespaces control visibility — what a process can see (its own PIDs, network stack, mounts, hostname). Cgroups control quotas — how much CPU/memory/PIDs a process can actually use, regardless of what it can see. The seven: PID, NET, MNT, UTS, IPC, USER, CGROUP. A container is just an ordinary Linux process wrapped in a private set of namespaces and attached to a cgroup — nothing more, from the kernel's point of view.
+
+Docker network — bridge/host/none/overlay, why custom bridge
+Default bridge gives IP connectivity but no name-based DNS (only --link, deprecated/banned). Host mode removes isolation entirely — banned by Inception. Overlay connects containers across multiple hosts, irrelevant for a single-VM setup. Custom bridge is the only option that gives isolation, a real subnet, AND Docker's embedded DNS resolver (127.0.0.11:53) that auto-registers container names to IPs — which is what makes fastcgi_pass wordpress:9000 actually work.
+
+Volumes — writable layer vs named volume vs bind mount
+Writable layer = ephemeral, gone on container removal. Named volume = persists, but Docker chooses the storage path on the host (/var/lib/docker/volumes/...). Bind mount = persists at a host path you choose explicitly. Inception requires data verifiably at /home/login/data/... — a plain named volume doesn't guarantee that specific, inspectable location, so a bind mount (or a named volume with driver_opts pointing at that path) is the only option that satisfies the requirement.
+
+FastCGI / php-fpm — why nginx can't run PHP
+nginx is a static file/reverse-proxy server with no PHP interpreter built in — it cannot execute .php files itself, ever. php-fpm is a standalone daemon that can run PHP, listening on its own port. FastCGI is the protocol nginx uses to package a request (script path, query string, method) and hand it to php-fpm, then receive the generated HTML back. This split is exactly why nginx and WordPress can live in separate containers — FPM being independently networkable is what makes that possible.
+
+How Docker and docker compose work
+Docker (the engine) builds/runs one image/container at a time via CLI commands or direct API calls. Compose is an orchestration layer on top — you describe multiple services, their networks, volumes, and env vars declaratively in one YAML file, and Compose translates that into the equivalent set of build/run/network/volume API calls for you, in the right order (depends_on). It doesn't replace dockerd/containerd — it's just a smarter client talking to the same API.
+
+Image with vs without compose
+No difference in the image itself — identical layers, identical format, runs identically either way. The difference is entirely in how the container around that image gets configured: Compose automates network creation, env injection, volume mounts, and startup ordering across multiple services that you'd otherwise have to hand-type as docker run flags, one container at a time, in the correct sequence.
+
+Docker vs VMs
+A VM virtualizes a whole machine — a hypervisor emulates hardware, and a full guest OS (own kernel) boots on top. A container shares the host's kernel and is just an isolated process (namespaces + cgroups) — no separate OS boots. Result: containers start in milliseconds with near-zero overhead vs a VM's dedicated RAM/CPU and full OS footprint, but containers have a weaker isolation boundary (shared kernel) than a VM's hardware-level separation.
+
+Pertinence of the directory structure
+One folder per service (each with its own Dockerfile + config/scripts) mirrors the "one container, one job" philosophy the whole project enforces. srcs/ at the root keeps all buildable infrastructure separate from docs/Makefile. This structure is what lets each service be built, versioned, and reasoned about independently — directly reflecting the separation-of-concerns principle behind why Inception forces three separate containers instead of one do-everything image.
