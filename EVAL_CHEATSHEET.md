@@ -11,7 +11,6 @@ Only what you need. Read top to bottom once, then use it as a checklist.
 | PHP        | 8.4 (`php84`, `php-fpm84`)                          |
 | NGINX      | 1.28                                                |
 | WordPress  | latest at install time (7.1 when tested), via WP-CLI 2.12.0 |
-| Adminer    | 6.0.2 (single PHP file)                             |
 | Portainer  | CE 2.45.0                                           |
 
 Check https://alpinelinux.org/releases the morning of the defense. If a 3.25
@@ -30,7 +29,7 @@ exists, change `FROM alpine:3.23.5` to the latest 3.24.x in all 6 Dockerfiles.
    cp -r ~/secrets_backup secrets
    make
    ```
-   Then open https://aachata.42.fr, /adminer/, /website/, and :9443.
+  Then open https://aachata.42.fr, /website/, and :9443.
 5. Rehearse the reboot: `sudo reboot`, then `make`, site still there with data.
 6. Know the 5 passwords by heart or have `secrets/` open in a terminal.
 
@@ -56,7 +55,7 @@ Files exist at the repo root. README first line is italic with your login.
 
 ### Docker basics
 ```
-docker images            # names = service names: mariadb wordpress nginx adminer website portainer
+docker images            # names = service names: mariadb wordpress nginx website portainer
 docker compose -f srcs/docker-compose.yml ps      # or: make ps
 ```
 One Dockerfile per service, all start with `FROM alpine:3.23.5`.
@@ -111,7 +110,6 @@ All recipes end with `make` (rebuilds what changed and recreates containers).
 | PHP-FPM port 9000 -> 9001        | `listen = 9001` in `wordpress/conf/www.conf` and `fastcgi_pass wordpress:9001;` in nginx conf |
 | MariaDB port 3306 -> 3307        | add `--port=3307` to the final `mariadbd` command in `mariadb/tools/init-mariadb.sh`, then `docker exec wordpress wp config set DB_HOST mariadb:3307 --allow-root --path=/var/www/html` |
 | Portainer port 9443 -> 9444      | compose: `"9444:9443"`                                                     |
-| Adminer port 8080 -> 8081        | Dockerfile CMD `0.0.0.0:8081` and `proxy_pass http://adminer:8081/;`       |
 | Website port 80 -> 8080          | Dockerfile CMD `httpd -f -p 8080 -h /var/www` and `proxy_pass http://website:8080/;` |
 
 Why NGINX port change needs nothing else: `wp-config.php` defines `WP_HOME`
@@ -119,8 +117,6 @@ and `WP_SITEURL` from the host the browser used (`$_SERVER['HTTP_HOST']`), so
 links and redirects follow the port.
 
 ### Bonus
-- Adminer: https://aachata.42.fr/adminer/ , System MySQL, Server `mariadb`,
-  user `wpuser`, password `secrets/db_password.txt`, database `wordpress`.
 - Static site: https://aachata.42.fr/website/ (HTML + CSS, one file, no PHP).
 - Portainer: https://aachata.42.fr:9443 , user `admin`, password
   `secrets/portainer_password.txt`. Click "Get started", see the containers,
@@ -220,10 +216,8 @@ links and redirects follow the port.
   config, `CMD nginx -g "daemon off;"`.
 - `nginx/conf/default.conf`: `listen 443 ssl`, cert paths, `ssl_protocols
   TLSv1.2 TLSv1.3`, root `/var/www/html` (the WordPress volume), `.php` goes
-  to `fastcgi_pass wordpress:9000`, `/adminer/` and `/website/` are
+  to `fastcgi_pass wordpress:9000`, `/website/` is
   `proxy_pass` to the bonus containers.
-- `bonus/adminer/Dockerfile`: `php84 + mysqli + session`, download
-  `adminer-6.0.2.php` as `index.php`, `CMD php -S 0.0.0.0:8080`.
 - `bonus/website/Dockerfile` + `index.html`: `busybox-extras` gives `httpd`;
   `CMD httpd -f -h /var/www` serves the page on port 80 in the foreground.
 - `bonus/portainer/Dockerfile`: download and extract the official Portainer
@@ -267,7 +261,7 @@ links and redirects follow the port.
 | Symptom                                   | Do                                                                 |
 |-------------------------------------------|--------------------------------------------------------------------|
 | `make` fails on a missing secret file     | `ls secrets/`, copy the backup, `make` again                        |
-| `nginx` is "Restarting" right after boot  | wait 5 s, it retries until wordpress/adminer/website resolve; `make ps` |
+| `nginx` is "Restarting" right after boot  | wait 5 s, it retries until wordpress/website resolve; `make ps` |
 | Browser shows the WordPress install page  | first start was interrupted: `make re` (wipes data, 3 minutes)     |
 | Port 443 already in use                   | `sudo ss -ltnp | grep 443`, stop that service, `make`              |
 | Portainer says timed out                  | not applicable, admin is created from the secret at start; if the UI hangs: `docker restart portainer` |

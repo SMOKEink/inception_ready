@@ -15,7 +15,6 @@ The stack serves a WordPress website over HTTPS only:
 | nginx     | Single entrypoint, TLS 1.2/1.3 on port 443        | mandatory |
 | wordpress | WordPress + PHP-FPM (port 9000, internal only)    | mandatory |
 | mariadb   | Database (port 3306, internal only)               | mandatory |
-| adminer   | Web UI for the database, at `/adminer/`           | bonus     |
 | website   | Static HTML/CSS site, at `/website/`              | bonus     |
 | portainer | Docker management UI, on port 9443 (free choice)  | bonus     |
 
@@ -50,7 +49,7 @@ See `USER_DOC.md` and `DEV_DOC.md` for details.
 
 - `Makefile` is the entrypoint: it creates the data directories under
   `${HOME}/data` and runs `docker compose`.
-- `srcs/docker-compose.yml` declares the six services, the network, the two
+- `srcs/docker-compose.yml` declares the five services, the network, the two
   named volumes and the secrets. Each service points to its own Dockerfile in
   `srcs/requirements/<service>/` (bonus ones in `srcs/requirements/bonus/`).
 - Each Dockerfile installs the software with `apk`, copies its configuration
@@ -75,9 +74,9 @@ See `USER_DOC.md` and `DEV_DOC.md` for details.
   waits for it (`condition: service_healthy`), so no wait loop is needed in
   the scripts.
 - NGINX terminates TLS and forwards `.php` requests to `wordpress:9000` over
-  FastCGI. The bonus web UIs are reverse-proxied under `/adminer/` and
-  `/website/`, so port 443 stays the only entrypoint. Portainer needs its own
-  port (its web UI does not work under a sub-path), which the bonus allows.
+  FastCGI. The bonus website is reverse-proxied under `/website/`, so port 443
+  stays the only entrypoint. Portainer needs its own port (its web UI does not
+  work under a sub-path), which the bonus allows.
 
 ### Virtual machines vs Docker
 
@@ -128,8 +127,7 @@ in Compose) whose storage is that host directory.
 - WP-CLI documentation (https://developer.wordpress.org/cli/commands/)
 - NGINX documentation: `ssl_protocols`, `fastcgi_pass`, `proxy_pass`
 - PHP-FPM configuration (pool `listen`, `pm` settings)
-- Adminer (https://www.adminer.org), Portainer CE documentation
-  (https://docs.portainer.io)
+- Portainer CE documentation (https://docs.portainer.io)
 
 ### AI usage
 

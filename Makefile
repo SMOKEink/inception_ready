@@ -1,6 +1,5 @@
-# LOGIN   = aachata
-# DATA    = /home/$(LOGIN)/data
-DATA    = $(HOME)/data
+LOGIN   = aachata
+DATA    = /home/$(LOGIN)/data
 COMPOSE = docker compose -f srcs/docker-compose.yml
 
 all: up
@@ -8,7 +7,6 @@ all: up
 up:
 	mkdir -p $(DATA)/mariadb $(DATA)/wordpress
 	$(COMPOSE) up -d --build
-# -d : detach , --build : rebiuld images every times even if they exist
 down:
 	$(COMPOSE) down
 

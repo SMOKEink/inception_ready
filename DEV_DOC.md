@@ -20,7 +20,6 @@ srcs/requirements/
     wordpress/  Dockerfile, conf/www.conf, conf/memory.ini, tools/init.sh
     nginx/      Dockerfile, conf/default.conf
     bonus/
-        adminer/    Dockerfile
         website/    Dockerfile, index.html
         portainer/  Dockerfile
 ```
@@ -83,12 +82,12 @@ docker images
   creates the second user. Then `exec php-fpm84 -F`.
 - `nginx`: the self-signed certificate is generated at build time;
   `nginx -g "daemon off;"` is the main process.
-- Bonus: `php -S` (Adminer), BusyBox `httpd -f` (static site),
+- Bonus: BusyBox `httpd -f` (static site),
   `./portainer --admin-password-file` (Portainer).
 
 Compose starts `wordpress` only when the `mariadb` healthcheck passes, and
-`nginx` after `wordpress`, `adminer` and `website` (nginx resolves their
-names at startup).
+`nginx` after `wordpress` and `website` (nginx resolves their names at
+startup).
 
 ## Data and persistence
 

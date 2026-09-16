@@ -6,7 +6,6 @@
 |----------------------------------|------------------------------------------------|
 | https://aachata.42.fr            | The WordPress website                          |
 | https://aachata.42.fr/wp-admin   | WordPress administration panel                 |
-| https://aachata.42.fr/adminer/   | Adminer, a web interface to the database       |
 | https://aachata.42.fr/website/   | A static showcase website                      |
 | https://aachata.42.fr:9443       | Portainer, a web interface to manage Docker    |
 
@@ -43,9 +42,6 @@ file per password, never committed to git):
 
 To change a password: edit the secret file, then `make re` (the accounts are
 created on the first start of an empty stack).
-
-Adminer login: System `MySQL`, Server `mariadb`, Username `MYSQL_USER`,
-Password from `secrets/db_password.txt`, Database `MYSQL_DATABASE`.
 
 ## Check that everything runs
 

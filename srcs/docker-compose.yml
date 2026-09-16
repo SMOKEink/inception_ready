@@ -50,19 +50,7 @@ services:
       - inception
     depends_on:
       - wordpress
-      - adminer
       - website
-    restart: always
-
-  # ---------- bonus ----------
-  adminer:
-    build: requirements/bonus/adminer
-    image: adminer:aachata
-    container_name: adminer
-    networks:
-      - inception
-    depends_on:
-      - mariadb
     restart: always
 
   website:
@@ -92,14 +80,12 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${HOME}/data/mariadb
-      # device: /home/aachata/data/mariadb
+      device: /home/aachata/data/mariadb
   wordpress:
     driver_opts:
       type: none
       o: bind
       device: ${HOME}/data/wordpress
-      # device: /home/aachata/data/wordpress
 
 networks:
   inception:
