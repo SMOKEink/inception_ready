@@ -23,7 +23,11 @@ fclean:
 	$(COMPOSE) down --rmi all -v
 	sudo rm -rf $(DATA)
 
+brune:
+	$(COMPOSE) down --remove-orphans
+	docker builder prune -af
+
 re: fclean all
 
-.PHONY: all down ps logs clean fclean
+.PHONY: all down ps logs clean fclean brune
 
