@@ -50,7 +50,6 @@ services:
       - inception
     depends_on:
       - wordpress
-      - website
     restart: always
 
   website:
