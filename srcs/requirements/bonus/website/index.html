@@ -31,30 +31,7 @@
 </head>
 <body>
 <main>
-    <header>
-        <h1>Inception <span>/</span> aachata</h1>
-        <p>A small Docker infrastructure built from scratch at 42, one container per service.</p>
-    </header>
-
-    <h2>Services</h2>
-    <div class="grid">
-        <div class="card"><strong>NGINX</strong><small>TLS 1.2 / 1.3 entrypoint on port 443</small></div>
-        <div class="card"><strong>WordPress</strong><small>PHP-FPM, installed with WP-CLI</small></div>
-        <div class="card"><strong>MariaDB</strong><small>Database on a persistent volume</small></div>
-        <div class="card"><strong>Static site</strong><small>This page, served by BusyBox httpd (bonus)</small></div>
-        <div class="card"><strong>Portainer</strong><small>Docker management UI (bonus)</small></div>
-    </div>
-
-    <h2>How it is built</h2>
-    <ul>
-        <li>Every image is written by hand from <code>alpine:3.23.5</code>, no ready-made images.</li>
-        <li>Containers talk over a dedicated Docker network; only NGINX is published to the host.</li>
-        <li>WordPress files and the database live in named volumes under <code>/home/aachata/data</code>.</li>
-        <li>Passwords are Docker secrets, never written in the images or the repository.</li>
-        <li>Each container runs one foreground process as PID 1 and restarts on crash.</li>
-    </ul>
-
-    <footer>Static HTML and CSS only. Written for the Inception project at 42.</footer>
+    <h1>static website made by aachata</h1>
 </main>
 </body>
 </html>
