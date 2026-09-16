@@ -73,11 +73,11 @@ docker images
 
 ## How a service starts
 
-- `mariadb`: `init.sh` runs once when `/var/lib/mysql/mysql` does not exist:
+- `mariadb`: `init-mariadb.sh` runs once when `/var/lib/mysql/mysql` does not exist:
   `mariadb-install-db`, then `mariadbd --bootstrap` with the SQL that sets the
   root password, creates the database and the WordPress user. Then
   `exec mariadbd`.
-- `wordpress`: `init.sh` runs once when `wp-config.php` does not exist:
+- `wordpress`: `init-wordpress.sh` runs once when `wp-config.php` does not exist:
   WP-CLI downloads WordPress, writes `wp-config.php`, installs the site and
   creates the second user. Then `exec php-fpm84 -F`.
 - `nginx`: the self-signed certificate is generated at build time;
